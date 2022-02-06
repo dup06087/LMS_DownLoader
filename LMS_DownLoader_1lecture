@@ -6,43 +6,39 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import urllib.request
 
-# scroll을 다뤄야하면 selenium (Not Beautifulsoup)
 browser = webdriver.Chrome("C:/Users/dup06/Desktop/Python/LMS_downloader/chromedriver.exe")
 browser.get("https://eclass.seoultech.ac.kr/ilos/main/main_form.acl")
 time.sleep(3)
 
-# 로그인
-id_ = ""
-pw = ""
-title_lst = ["통계패키지활용자료분석"] # 여러개일때도 리스트로
-browser.find_element_by_css_selector("div.header_login_img").click() # tag 생략가능
-browser.find_element_by_css_selector("input#usr_id").send_keys(id_) # tag 생략가능
-browser.find_element_by_css_selector("input#usr_pwd").send_keys(pw) # tag 생략가능
-browser.find_element_by_css_selector("input.btntype").click() # tag 생략가능
+id_ = ""  ### 아이디
+pw = ""  ### 비밀번호
+title_lst = [""]  ### 강의 이름만 바꾸기(리스트로 넣기)
+browser.find_element_by_css_selector("div.header_login_img").click()
+browser.find_element_by_css_selector("input#usr_id").send_keys(id_)
+browser.find_element_by_css_selector("input#usr_pwd").send_keys(pw)
+browser.find_element_by_css_selector("input.btntype").click()
 
 # 각 과목 폴더 만들기
-if not os.path.exists("./강의영상"): ## 파일이 없으면 파일만들기
+if not os.path.exists("./강의영상"):
     os.mkdir("강의영상")
 
 for i in range(len(title_lst)):
     if not os.path.exists("./강의영상/{}".format(title_lst[i])):
         os.mkdir("./강의영상/{}".format(title_lst[i]))
 
-# 각 과목 주차 폴더 만들기
-# 1과목 과목 폴더 만들고 주차별로 폴더 만들기
-browser.find_element_by_css_selector("[title^='통계패키지활용자료분석 강의실']").click()
+browser.find_element_by_css_selector("[title^='통계패키지활용자료분석 강의실']").click()  ### 강의이름만 바꾸기
 list_1 = browser.find_elements_by_css_selector("div.ibox3.wb-on")
 print(len(list_1))
 for i in range(len(list_1)):
-    if not os.path.exists("./강의영상/통계패키지활용자료분석/{}".format(f'{i + 1}주차')):
-        os.mkdir("./강의영상/통계패키지활용자료분석/{}".format(f'{i + 1}주차'))
+    if not os.path.exists("./강의영상/통계패키지활용자료분석/{}".format(f'{i + 1}주차')):  ### 강의 이름만 바꾸기
+        os.mkdir("./강의영상/통계패키지활용자료분석/{}".format(f'{i + 1}주차'))  ### 강의 이름만 바꾸기
 
 week_length = len(browser.find_elements_by_css_selector("div.wb-week-on"))
 
 for k in range(week_length):
-    # if k > 0:
+# if k > 1:
     time.sleep(1)
-    LEN = browser.find_elements_by_css_selector("div.wb-week-on") # tag 생략가능
+    LEN = browser.find_elements_by_css_selector("div.wb-week-on")
     LEN[k].click()
     time.sleep(1)
     lessons = browser.find_elements_by_css_selector("span.site-mouseover-color")
@@ -51,6 +47,7 @@ for k in range(week_length):
     print("lessons length", lessons)
 
     for i in range(length):
+        # if i == 11:
         time.sleep(2)
         lessons = browser.find_elements_by_css_selector("span.site-mouseover-color")
         lessons[i].click()
@@ -67,19 +64,24 @@ for k in range(week_length):
             except:
                 print("no")
                 cnt = True
-
         time.sleep(3)
-        browser.switch_to.default_content()
-        time.sleep(1)
-        # browser.switch_to.window()
-        browser.switch_to.frame(browser.find_element_by_css_selector("iframe[id='contentViewer']"))
-        browser.find_element_by_css_selector("div.vc-front-screen-play-btn").click()
-        time.sleep(12)
-        # browser.find_element_by_css_selector("div.vc-pctrl-play-pause-btn.vc-pctrl-on-pause").click()
-        url = browser.find_element_by_css_selector("video.vc-vplay-video1").get_attribute("src")
-        print("url_lst : ", url)
-        browser.switch_to.parent_frame()
-        browser.find_element_by_css_selector("div.contents-view-btn.contents-view-btn-right").click()
-        savename = './강의영상/통계패키지활용자료분석/{}주차/lecture{}.mp4'.format(k+1, i+1)
-        urllib.request.urlretrieve(url, savename)
-        print("저장")
+
+        try:
+            browser.switch_to.frame(browser.find_element_by_css_selector("iframe[id='contentViewer']"))
+            url = browser.find_element_by_css_selector("video.vjs-tech").get_attribute("src")
+            browser.switch_to.parent_frame()
+            browser.find_element_by_css_selector("div.contents-view-btn.contents-view-btn-right").click()
+            savename = './강의영상/통계패키지활용자료분석/{}주차/lecture{}.mp4'.format(k+1, i+1)  ## 강의 이름만 바꾸기
+            urllib.request.urlretrieve(url, savename)
+
+        except:
+            browser.switch_to.default_content()
+            time.sleep(1)
+            browser.switch_to.frame(browser.find_element_by_css_selector("iframe[id='contentViewer']"))
+            browser.find_element_by_css_selector("div.vc-front-screen-play-btn").click()
+            time.sleep(12)
+            url = browser.find_element_by_css_selector("video.vc-vplay-video1").get_attribute("src")
+            browser.switch_to.parent_frame()
+            browser.find_element_by_css_selector("div.contents-view-btn.contents-view-btn-right").click()
+            savename = './강의영상/통계패키지활용자료분석/{}주차/lecture{}.mp4'.format(k+1, i+1)  ## 강의 이름만 바꾸기
+            urllib.request.urlretrieve(url, savename)
